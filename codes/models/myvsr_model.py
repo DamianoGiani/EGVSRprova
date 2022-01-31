@@ -9,7 +9,7 @@ from .optim import define_criterion, define_lr_schedule
 from utils import net_utils, data_utils
 
 
-class VSRModel(BaseModel):
+class MyVSRModel(BaseModel):
     """ A model wraper for objective video super-resolution
 
         It contains a generator, as well as relative functions to train and test
@@ -17,7 +17,7 @@ class VSRModel(BaseModel):
     """
 
     def __init__(self, opt):
-        super(VSRModel, self).__init__(opt)
+        super(MyVSRModel, self).__init__(opt)
 
         if self.verbose:
             self.logger.info('{} Model Info {}'.format('=' * 20, '=' * 20))
