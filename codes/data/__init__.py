@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from .paired_lmdb_dataset import PairedLMDBDataset
 from .unpaired_lmdb_dataset import UnpairedLMDBDataset
 from .paired_folder_dataset import PairedFolderDataset
-
+from .mypaired_folder_dataset import MyPairedFolderDataset
 
 def create_dataloader(opt, dataset_idx='train'):
     # setup params
@@ -67,6 +67,68 @@ def create_dataloader(opt, dataset_idx='train'):
         raise ValueError('Unrecognized dataset index: {}'.format(dataset_idx))
 
     return loader
+
+def mycreate_dataloader(opt, dataset_idx='train'):
+    # setup params
+    data_opt = opt['dataset'].get(dataset_idx)
+    degradation_type = opt['dataset']['degradation']['type']
+
+    # -------------- loader for training -------------- #
+    if dataset_idx == 'train':
+        # check dataset
+        assert data_opt['name'] in ('VimeoTecoGAN', 'VimeoTecoGAN-sub'), \
+            'Unknown Dataset: {}'.format(data_opt['name'])
+
+        if degradation_type == 'BI':
+            # create dataset
+            dataset = PairedLMDBDataset(
+                data_opt,
+                scale=opt['scale'],
+                tempo_extent=opt['train']['tempo_extent'],
+                moving_first_frame=opt['train'].get('moving_first_frame', False),
+                moving_factor=opt['train'].get('moving_factor', 1.0))
+
+        elif degradation_type == 'BD':
+            # enlarge crop size to incorporate border size
+            sigma = opt['dataset']['degradation']['sigma']
+            enlarged_crop_size = data_opt['crop_size'] + 2 * int(sigma * 3.0)
+
+            # create dataset
+            dataset = UnpairedLMDBDataset(
+                data_opt,
+                crop_size=enlarged_crop_size,  # override
+                tempo_extent=opt['train']['tempo_extent'],
+                moving_first_frame=opt['train'].get('moving_first_frame', False),
+                moving_factor=opt['train'].get('moving_factor', 1.0))
+
+        else:
+            raise ValueError('Unrecognized degradation type: {}'.format(
+                degradation_type))
+
+        # create data loader
+        loader = DataLoader(
+            dataset=dataset,
+            batch_size=data_opt['batch_size'],
+            shuffle=True,
+            num_workers=data_opt['num_workers'],
+            pin_memory=data_opt['pin_memory'])
+
+    # -------------- loader for testing -------------- #
+    elif dataset_idx.startswith('test'):
+        # create data loader
+        dataset = MyPairedFolderDataset(data_opt, scale=opt['scale'])
+        loader = DataLoader(
+            dataset=dataset,
+            batch_size=1,
+            shuffle=False,
+            num_workers=data_opt['num_workers'],
+            pin_memory=data_opt['pin_memory'])
+
+    else:
+        raise ValueError('Unrecognized dataset index: {}'.format(dataset_idx))
+
+    return loader
+
 
 
 def prepare_data(opt, data, kernel):

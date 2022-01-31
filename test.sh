@@ -11,7 +11,7 @@ exp_id=001
 
 
 # run
-python ./codes/main.py \
+python ./codes/mymain.py \
   --exp_dir ./experiments_${degradation}/${model}/${exp_id} \
   --mode test \
   --model ${model} \
