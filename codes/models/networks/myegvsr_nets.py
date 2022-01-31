@@ -200,6 +200,8 @@ class FRNet(BaseSequenceGenerator):
 
         # compute hr_curr
         hr_curr = self.srnet(lr_curr, space_to_depth(hr_prev_warp, self.scale))
+        #mi potrei salvare in memoria concat fra lrcurrent e spacetodepth hr prev warp
+        #oppure solo il warp e il frame me lo prendo tutto
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # estimate lr flow (lr_curr -> lr_prev)
         lr_flow2 = self.fnet(lr_curr2, lr_prev2)
